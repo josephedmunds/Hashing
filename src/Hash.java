@@ -7,6 +7,12 @@ public class Hash {
     private int probe;
     private double loadFactor;
 
+    /**
+     * Hash Constructor
+     * @param size
+     * @param loadFactor
+     * @param probeType
+     */
     public Hash(int size, int loadFactor, int probeType) {
         this.probe = probeType;
         this.loadFactor = loadFactor / 100;
@@ -18,6 +24,10 @@ public class Hash {
         this.fillTable(probeType);
     }
 
+    /**
+     * Fills the Hash Table
+     * @param probeType Whether to fill the table through linear probing or quadratic probing
+     */
     public void fillTable(int probeType) {
         int index;
         int currKey = Utilities.randomGenerator();
@@ -43,6 +53,11 @@ public class Hash {
         }
     }
 
+    /**
+     * Instructions for linear probing
+     * @param currIndex
+     * @return
+     */
     public int linearProbe(int currIndex) {
         currIndex++;
         if (currIndex == table.length)
@@ -50,45 +65,61 @@ public class Hash {
         return currIndex;
     }
 
+    /**
+     * Instructions for quadratic probing
+     * @param currIndex
+     * @return
+     */
     public int quadraticProbe(int currIndex) {
         return currIndex;
     }
 
-    public int[] searchTable(int[] hashTable, int key, int probeType) {
+    /**
+     * Searching the table
+     * @param hashTable
+     * @param value
+     * @param key
+     * @param probeType
+     * @param numProbes
+     * @return
+     */
+    public int[] searchTable(int[] hashTable, int value, int key, int probeType, int numProbes) {
         int data[] = new int[2];
-        int numProbes = 0;
         int successfulSearch = -1;
-        int correctKey = key % 1019;
-        if (hashTable[correctKey] == key) {
+
+        //Base-case: Found on first probe
+        if (hashTable[key] == value) {
             numProbes = 1;
             successfulSearch = 1;
         }
         else {
-            while (hashTable[correctKey] != key) {
+
                 if (probeType == 0) {
-                    correctKey = linearProbe(correctKey);
-                    numProbes++;
+                    searchTable(hashTable, value, linearProbe(key), probeType, numProbes++);
                 }
                 else if (probeType == 1) {
-                    correctKey = quadraticProbe(correctKey);
-                    numProbes++;
+                    searchTable(hashTable, value, quadraticProbe(key), probeType, numProbes++);
                 }
-                else if (hashTable[correctKey] == -5)
+                else if (hashTable[key] == -5)
                     successfulSearch = 0;
-                    break;
-            }
+
         }
         data[0] = numProbes;
         data[1] = successfulSearch;
         return data;
     }
 
+    /**
+     * Finds the statistics and outputs them in an easy to read format
+     * @param probeType
+     */
     public void generateStats(int probeType) {
         int[] data;
         int[] successStats = new int[2];
         int[] failStats = new int[2];
         for (int i = 0; i < 10000; i++) {
-            data = searchTable(table, i, probeType);
+            data = searchTable(table, i, i % 1019, probeType, 0);
+
             if (data[1] == 1) {
                 successStats[0]++; //increment number of successful searches
                 successStats[1] += data[0]; //add to the total number of probes used for successful searches
