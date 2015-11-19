@@ -21,7 +21,7 @@ public class Hash {
         for (int i = 0; i < table.length; i++) {
             table[i] = -5;
         }
-        this.fillTable(probeType, (int) (size * (this.load/100)));
+        this.fillTable(probeType, (int) (size * (load/100)));
     }
 
     /**
@@ -30,8 +30,10 @@ public class Hash {
      */
     public void fillTable(int probeType, int fillSize) {
         int index;
-        int currKey = Utilities.randomGenerator();
+        int currKey;
+
         for (int i = 0; i < 611; i++) {
+            currKey = Utilities.randomGenerator();
             index = currKey % 1019;
             if (table[index] == -5) {
                 table[index] = currKey;
@@ -49,7 +51,6 @@ public class Hash {
                     table[index] = currKey;
                 } */
             }
-            currKey = Utilities.randomGenerator();
         }
     }
 
@@ -90,25 +91,28 @@ public class Hash {
 
         //Base-case: Found on first probe
         if (hashTable[key] == value) {
-            numProbes = 1;
+            numProbes++;
             successfulSearch = 1;
             System.out.println("Success");
-
+            data[0] = numProbes;
+            data[1] = successfulSearch;
         }
         else if (hashTable[key] == -5) {
             successfulSearch = 0;
-            System.out.println("Failure");
+            numProbes++;
+            //System.out.println("Failure");
+            data[0] = numProbes;
+            data[1] = successfulSearch;
         }
         else {
                 if (type == 0) {
-                    searchTable(hashTable, value, linearProbe(key), type, numProbes++);
+                    data = searchTable(hashTable, value, linearProbe(key), type, numProbes++);
                 }
                 else if (type == 1) {
-                    searchTable(hashTable, value, quadraticProbe(key), type, numProbes++);
+                    data = searchTable(hashTable, value, quadraticProbe(key), type, numProbes++);
                 }
         }
-        data[0] = numProbes;
-        data[1] = successfulSearch;
+
         return data;
     }
 
@@ -120,7 +124,7 @@ public class Hash {
         int[] data;
         int[] successStats = new int[2];
         int[] failStats = new int[2];
-        for (int i = 0; i < 10000; i++) {
+        for (int i = 1; i <= 10000; i++) {
             data = searchTable(table, i, i % 1019, probeType, 0);
 
             if (data[1] == 1) {
