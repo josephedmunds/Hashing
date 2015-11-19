@@ -5,7 +5,7 @@
 public class Hash {
     private int[] table;
     private int probe;
-    private double loadFactor;
+    private double load;
 
     /**
      * Hash Constructor
@@ -15,23 +15,23 @@ public class Hash {
      */
     public Hash(int size, int loadFactor, int probeType) {
         this.probe = probeType;
-        this.loadFactor = loadFactor / 100;
-        this.table = new int[size*loadFactor];
+        this.table = new int[size];
+        this.load = loadFactor;
         //Setting the value of all indices to -5. This will be used to test if the index has already been hashed
         for (int i = 0; i < table.length; i++) {
             table[i] = -5;
         }
-        this.fillTable(probeType);
+        this.fillTable(probeType, (int) (size * (this.load/100)));
     }
 
     /**
      * Fills the Hash Table
      * @param probeType Whether to fill the table through linear probing or quadratic probing
      */
-    public void fillTable(int probeType) {
+    public void fillTable(int probeType, int fillSize) {
         int index;
         int currKey = Utilities.randomGenerator();
-        for (int i = 0; i < table.length; i++) {
+        for (int i = 0; i < 611; i++) {
             index = currKey % 1019;
             if (table[index] == -5) {
                 table[index] = currKey;
@@ -42,12 +42,12 @@ public class Hash {
                         index = linearProbe(index);
                     }
                     table[index] = currKey;
-                } else if (probeType == 1) {
+                } /*else if (probeType == 1) {
                     while (table[index] != -5) {
                         index = quadraticProbe(index);
                     }
                     table[index] = currKey;
-                }
+                } */
             }
             currKey = Utilities.randomGenerator();
         }
@@ -85,24 +85,27 @@ public class Hash {
      */
     public int[] searchTable(int[] hashTable, int value, int key, int probeType, int numProbes) {
         int data[] = new int[2];
-        int successfulSearch = -1;
+        int successfulSearch = 0;
+        int type = probeType;
 
         //Base-case: Found on first probe
         if (hashTable[key] == value) {
             numProbes = 1;
             successfulSearch = 1;
+            System.out.println("Success");
+
+        }
+        else if (hashTable[key] == -5) {
+            successfulSearch = 0;
+            System.out.println("Failure");
         }
         else {
-
-                if (probeType == 0) {
-                    searchTable(hashTable, value, linearProbe(key), probeType, numProbes++);
+                if (type == 0) {
+                    searchTable(hashTable, value, linearProbe(key), type, numProbes++);
                 }
-                else if (probeType == 1) {
-                    searchTable(hashTable, value, quadraticProbe(key), probeType, numProbes++);
+                else if (type == 1) {
+                    searchTable(hashTable, value, quadraticProbe(key), type, numProbes++);
                 }
-                else if (hashTable[key] == -5)
-                    successfulSearch = 0;
-
         }
         data[0] = numProbes;
         data[1] = successfulSearch;
@@ -130,10 +133,12 @@ public class Hash {
             }
         }
 
-        double successAvg = successStats[1] / successStats[0];
-        double failAvg = failStats[1] / failStats[0];
 
-        System.out.printf("Total successes: %d\t\tAverage probes per: %f\n", successStats[0], successAvg);
+        double failAvg = (double) failStats[1] / (double) failStats[0];
         System.out.printf("Total failures: %d\t\tAverage probes per: %f\n", failStats[0], failAvg);
+
+        double successAvg = (double) successStats[1] / (double) successStats[0];
+        System.out.printf("Total successes: %d\t\tAverage probes per: %f\n", successStats[0], successAvg);
+
     }
 }
