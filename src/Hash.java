@@ -32,7 +32,7 @@ public class Hash {
         int index;
         int currKey;
 
-        for (int i = 0; i < 611; i++) {
+        for (int i = 0; i < fillSize; i++) {
             currKey = Utilities.randomGenerator();
             index = currKey % 1019;
             if (table[index] == -5) {
@@ -44,12 +44,10 @@ public class Hash {
                         index = linearProbe(index);
                     }
                     table[index] = currKey;
-                } /*else if (probeType == 1) {
-                    while (table[index] != -5) {
-                        index = quadraticProbe(index);
-                    }
+                } else if (probeType == 1) {
+                    index = quadraticProbe(index, table, currKey);
                     table[index] = currKey;
-                } */
+                }
             }
         }
     }
@@ -66,50 +64,57 @@ public class Hash {
         return currIndex;
     }
 
-    /**
-     * Instructions for quadratic probing
-     * @param currIndex
-     * @return
-     */
-    public int quadraticProbe(int currIndex) {
-        return currIndex;
+
+    public int quadraticProbe(int startIndex, int[] hashTable, int value) {
+        int variance = 1;
+
+        while (hashTable[startIndex] != -5) {
+            if (hashTable[startIndex] == value){
+                break; //Found
+            }
+            if (variance > 1) {
+                startIndex += (int)Math.pow((double)variance, 2.0) % 1019;
+                variance *= -1;
+            }
+            else {
+                startIndex -= (int)Math.pow((double)variance, 2.0) % 1019;
+                while (startIndex < 0)
+                    startIndex += 1019;
+                variance -= 1;
+            }
+        }
+        return startIndex;
     }
 
     /**
-     * Searching the table
+     *
      * @param hashTable
      * @param value
      * @param key
      * @param probeType
-     * @param numProbes
+     * @param data
      * @return
      */
-    public int[] searchTable(int[] hashTable, int value, int key, int probeType, int numProbes) {
-        int data[] = new int[2];
-        int successfulSearch = 0;
+    public int[] searchTable(int[] hashTable, int value, int key, int probeType, int[] data) {
+        data[0]++; //Increment the number of probes every time this method is called. Will stop accumulating when the loops break.
+        int successfulSearch;
         int type = probeType;
 
         //Base-case: Found on first probe
         if (hashTable[key] == value) {
-            numProbes++;
             successfulSearch = 1;
-            System.out.println("Success");
-            data[0] = numProbes;
             data[1] = successfulSearch;
         }
         else if (hashTable[key] == -5) {
             successfulSearch = 0;
-            numProbes++;
-            //System.out.println("Failure");
-            data[0] = numProbes;
             data[1] = successfulSearch;
         }
         else {
                 if (type == 0) {
-                    data = searchTable(hashTable, value, linearProbe(key), type, numProbes++);
+                    data = searchTable(hashTable, value, linearProbe(key), type, data);
                 }
                 else if (type == 1) {
-                    data = searchTable(hashTable, value, quadraticProbe(key), type, numProbes++);
+                    data = searchTable(hashTable, value, quadraticProbe(key, hashTable, value), type, data);
                 }
         }
 
@@ -121,11 +126,12 @@ public class Hash {
      * @param probeType
      */
     public void generateStats(int probeType) {
-        int[] data;
-        int[] successStats = new int[2];
-        int[] failStats = new int[2];
+        int[] data = new int[2];
+        double[] successStats = new double[2];
+        double[] failStats = new double[2];
         for (int i = 1; i <= 10000; i++) {
-            data = searchTable(table, i, i % 1019, probeType, 0);
+            data[0] = 0;
+            data = searchTable(table, i, i % 1019, probeType, data);
 
             if (data[1] == 1) {
                 successStats[0]++; //increment number of successful searches
@@ -133,16 +139,15 @@ public class Hash {
             }
             else {
                 failStats[0]++; //increments the number of failed searches
-                failStats[0] += data[0]; //add to the total number of probes used for failed searches
+                failStats[1] += data[0]; //add to the total number of probes used for failed searches
             }
         }
 
+        double failAvg = failStats[1] / failStats[0];
+        System.out.printf("Average probes per failure: %f\n", failAvg);
 
-        double failAvg = (double) failStats[1] / (double) failStats[0];
-        System.out.printf("Total failures: %d\t\tAverage probes per: %f\n", failStats[0], failAvg);
-
-        double successAvg = (double) successStats[1] / (double) successStats[0];
-        System.out.printf("Total successes: %d\t\tAverage probes per: %f\n", successStats[0], successAvg);
+        double successAvg = (successStats[1]) / successStats[0];
+        System.out.printf("Average probes per success: %f\n", successAvg);
 
     }
 }

@@ -10,7 +10,7 @@ public class Driver {
         //Hash hash = new Hash(arguments[0], arguments[1], arguments[2]);
 
         //FOR TEST PURPOSES
-        Hash hash = new Hash(1019, 60, 0);
+        Hash hash = new Hash(1019, 80, 1);
 
         hash.generateStats(0);
 
